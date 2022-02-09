@@ -14,15 +14,13 @@ const JS_FIXTURE = `export default function foo(a, b) {
 `;
 
 const ROOT = process.cwd();
-//const EmberCLITargets = ['ember-cli-3-24', 'ember-cli-3-28', 'ember-cli'];
-const EmberCLITargets = ['ember-cli'];
+const EmberCLITargets = ['ember-cli-3-24', 'ember-cli-3-28', 'ember-cli'];
 
 describe('ember generate', () => {
   let fixturifyProject;
 
   EmberCLITargets.forEach((target) => {
-
-    describe(`ember-cli: ${target}`, function() {
+    describe(`ember-cli: ${target}`, function () {
       async function ember(args) {
         fixturifyProject.writeSync();
         process.chdir(fixturifyProject.baseDir);
@@ -36,7 +34,10 @@ describe('ember generate', () => {
         fixturifyProject = new Project('best-ever', '0.0.0', {
           files: {},
         });
-        fixturifyProject.linkDevDependency('ember-cli', { baseDir: __dirname, resolveName: target });
+        fixturifyProject.linkDevDependency('ember-cli', {
+          baseDir: __dirname,
+          resolveName: target,
+        });
       });
 
       afterEach(async () => {
@@ -48,16 +49,18 @@ describe('ember generate', () => {
       function addAddon(name, version, callback = () => {}) {
         let addon = fixturifyProject.addDevDependency(name, version, {
           files: {
-            'index.js': `module.exports = { name: require("./package").name };`
+            'index.js': `module.exports = { name: require("./package").name };`,
           },
         });
 
         addon.pkg.keywords.push('ember-addon');
         addon.pkg['ember-addon'] = {};
 
-        addon.linkDependency('ember-cli-typescript-blueprint-polyfill', { target: path.join(__dirname, '..') });
+        addon.linkDependency('ember-cli-typescript-blueprint-polyfill', {
+          target: path.join(__dirname, '..'),
+        });
 
-        callback(addon)
+        callback(addon);
       }
 
       describe('with typescript blueprint', () => {
@@ -80,9 +83,9 @@ describe('ember generate', () => {
                   app: {
                     'my-blueprints': {
                       '__name__.ts': `export default function <%= camelizedModuleName %>(a: string, b: number): string {
-                        return a + b;
-                      }
-                      `,
+  return a + b;
+}
+`,
                     },
                   },
                 },
@@ -179,9 +182,9 @@ describe('ember generate', () => {
                   app: {
                     'my-blueprints': {
                       '__name__.js': `export default function <%= camelizedModuleName %>(a, b) {
-                        return a + b;
-                      }
-                      `,
+  return a + b;
+}
+`,
                     },
                   },
                 },
@@ -197,12 +200,11 @@ describe('ember generate', () => {
             'foo',
             '--typescript',
           ]);
-          const output = result.outputStream.map((v) => v.toString());
 
           const generated = await file('app/my-blueprints/foo.js');
 
           expect(generated).toEqual(JS_FIXTURE);
-          expect(output.join('\n')).toEqual(
+          expect(result.stdout).toEqual(
             expect.stringContaining(
               "You passed the '--typescript' flag but there is no TypeScript blueprint available."
             )
