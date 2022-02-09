@@ -4,8 +4,26 @@
   "main": "index.js",
   "author": "Chris Freeman",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cafreeman/ember-cli-typescript-blueprint-polyfill"
+  },
+  "keywords": [
+    "ember",
+    "ember-cli",
+    "typescript",
+    "polyfill"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "test": "jest"
+    "lint": "eslint index.js src",
+    "test": "jest",
+    "release": "release-it"
   },
   "dependencies": {
     "chalk": "^4.0.0",
@@ -21,6 +39,10 @@
     "fixturify-project": "^4.0.2",
     "fs-extra": "^10.0.0",
     "jest": "^27.5.1",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "release-it": "^14.12.4"
+  },
+  "release-it": {
+    "github": true
   }
 }
