@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-typescript-blueprint-polyfill",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A polyfill for Ember CLI's TypeScript blueprint capabilities.",
   "main": "index.js",
   "author": "Chris Freeman",
