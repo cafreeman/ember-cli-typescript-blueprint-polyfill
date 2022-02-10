@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "lint": "eslint index.js src",
-    "test": "jest",
+    "test": "jest --testTimeout=10000",
     "release": "release-it"
   },
   "dependencies": {
