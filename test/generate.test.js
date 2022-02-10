@@ -21,11 +21,11 @@ describe('ember generate', () => {
 
   EmberCLITargets.forEach((target) => {
     describe(`ember-cli: ${target}`, function () {
-      async function ember(args) {
+      const cliBinPath = require.resolve(`${target}/bin/ember`);
+
+      function ember(args) {
         fixturifyProject.writeSync();
         process.chdir(fixturifyProject.baseDir);
-
-        const cliBinPath = require.resolve(`${target}/bin/ember`);
 
         return execa(cliBinPath, args);
       }

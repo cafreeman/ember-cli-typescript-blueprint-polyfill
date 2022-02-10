@@ -13,9 +13,8 @@ describe('ember destroy', () => {
 
   EmberCLITargets.forEach((target) => {
     describe(`ember-cli: ${target}`, function () {
-      async function ember(args) {
-        const cliBinPath = require.resolve(`${target}/bin/ember`);
-
+      const cliBinPath = require.resolve(`${target}/bin/ember`);
+      function ember(args) {
         return execa(cliBinPath, args);
       }
 
