@@ -10,11 +10,24 @@ function replaceExtension(filePath, newExt) {
   });
 }
 
+function replaceTypeScriptExtension(filePath) {
+  const extensionMap = {
+    '.ts': '.js',
+    '.gts': '.gjs',
+  };
+  const ext = path.extname(filePath);
+  const newExt = extensionMap[ext];
+
+  return replaceExtension(filePath, newExt);
+}
+
 function isTypeScriptFile(filePath) {
-  return path.extname(filePath) === '.ts';
+  const extension = path.extname(filePath);
+  return extension === '.ts' || extension === '.gts';
 }
 
 module.exports = {
   replaceExtension,
+  replaceTypeScriptExtension,
   isTypeScriptFile,
 };

@@ -13,6 +13,28 @@ const JS_FIXTURE = `export default function foo(a, b) {
 }
 `;
 
+const GTS_FIXTURE = `import Component from '@glimmer/component';
+
+interface Signature {
+  Args: {
+    foo: string;
+  }
+}
+
+export default class Foo extends Component<Signature> {
+  bar: string = 'bar';
+  <template>{{@foo}} {{this.bar}}</template>
+}
+`;
+
+const GJS_FIXTURE = `import Component from '@glimmer/component';
+
+export default class Foo extends Component {
+  bar = 'bar';
+  <template>{{@foo}} {{this.bar}}</template>
+}
+`;
+
 const ROOT = process.cwd();
 const EmberCLITargets = ['ember-cli-3-24', 'ember-cli-3-28', 'ember-cli'];
 
@@ -86,6 +108,19 @@ describe('ember generate', () => {
   return a + b;
 }
 `,
+                      '__name__.gts': `import Component from '@glimmer/component';
+
+interface Signature {
+  Args: {
+    foo: string;
+  }
+}
+
+export default class <%=classifiedModuleName %> extends Component<Signature> {
+  bar: string = 'bar';
+  <template>{{@foo}} {{this.bar}}</template>
+}
+`
                     },
                   },
                 },
@@ -98,16 +133,20 @@ describe('ember generate', () => {
           await ember(['generate', 'my-blueprint', 'foo']);
 
           const generated = await file('app/my-blueprints/foo.js');
-
           expect(generated).toEqual(JS_FIXTURE);
+
+          const generatedGjs = await file('app/my-blueprints/foo.gjs');
+          expect(generatedGjs).toEqual(GJS_FIXTURE);
         });
 
         test('it generates typescript with --typescript', async () => {
           await ember(['generate', 'my-blueprint', 'foo', '--typescript']);
 
           const generated = await file('app/my-blueprints/foo.ts');
-
           expect(generated).toEqual(TS_FIXTURE);
+
+          const generatedGts = await file('app/my-blueprints/foo.gts');
+          expect(generatedGts).toEqual(GTS_FIXTURE);
         });
 
         test('it generates typescript when isTypeScriptProject is true', async () => {
@@ -119,6 +158,9 @@ describe('ember generate', () => {
 
           const generated = await file('app/my-blueprints/foo.ts');
           expect(generated).toEqual(TS_FIXTURE);
+
+          const generatedGts = await file('app/my-blueprints/foo.gts');
+          expect(generatedGts).toEqual(GTS_FIXTURE);
         });
 
         test('it generates javascript when isTypeScriptProject is explicitly false', async () => {
@@ -130,6 +172,9 @@ describe('ember generate', () => {
 
           const generated = await file('app/my-blueprints/foo.js');
           expect(generated).toEqual(JS_FIXTURE);
+
+          const generatedGjs = await file('app/my-blueprints/foo.gjs');
+          expect(generatedGjs).toEqual(GJS_FIXTURE);
         });
 
         test('it generates typescript if {typescript: true} is present in ember-cli', async () => {
@@ -141,6 +186,9 @@ describe('ember generate', () => {
 
           const generated = await file('app/my-blueprints/foo.ts');
           expect(generated).toEqual(TS_FIXTURE);
+
+          const generatedGts = await file('app/my-blueprints/foo.gts');
+          expect(generatedGts).toEqual(GTS_FIXTURE);
         });
 
         test('does not generate typescript when --no-typescript is passed', async () => {
@@ -148,6 +196,9 @@ describe('ember generate', () => {
 
           const generated = await file('app/my-blueprints/foo.js');
           expect(generated).toEqual(JS_FIXTURE);
+
+          const generatedGjs = await file('app/my-blueprints/foo.gjs');
+          expect(generatedGjs).toEqual(GJS_FIXTURE);
         });
 
         test('does not generate typescript when --no-typescript is passed, even in a typescript project', async () => {
@@ -159,6 +210,9 @@ describe('ember generate', () => {
 
           const generated = await file('app/my-blueprints/foo.js');
           expect(generated).toEqual(JS_FIXTURE);
+
+          const generatedGjs = await file('app/my-blueprints/foo.gjs');
+          expect(generatedGjs).toEqual(GJS_FIXTURE);
         });
       });
 

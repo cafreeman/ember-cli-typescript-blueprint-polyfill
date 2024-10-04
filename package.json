@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "chalk": "^4.0.0",
+    "content-tag": "^2.0.2",
     "remove-types": "^1.0.0"
   },
   "devDependencies": {

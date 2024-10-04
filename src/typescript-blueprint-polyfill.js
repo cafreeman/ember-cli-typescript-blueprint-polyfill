@@ -1,6 +1,10 @@
-const { removeTypes } = require('remove-types');
 const chalk = require('chalk');
-const { replaceExtension, isTypeScriptFile } = require('./utils');
+const path = require('path');
+const {
+  replaceExtension,
+  replaceTypeScriptExtension,
+  isTypeScriptFile,
+} = require('./utils');
 
 module.exports = function (context) {
   const blueprintClass = context._super.constructor.prototype;
@@ -73,12 +77,12 @@ module.exports = function (context) {
   context.convertToJS = async function (fileInfo) {
     let rendered = await fileInfo.render();
 
-    const transformed = await removeTypes(rendered);
-
-    fileInfo.rendered = transformed;
-
-    fileInfo.displayPath = replaceExtension(fileInfo.displayPath, '.js');
-    fileInfo.outputPath = replaceExtension(fileInfo.outputPath, '.js');
+    fileInfo.rendered = await removeTypes(
+      path.extname(fileInfo.displayPath),
+      rendered
+    );
+    fileInfo.displayPath = replaceTypeScriptExtension(fileInfo.displayPath);
+    fileInfo.outputPath = replaceTypeScriptExtension(fileInfo.outputPath);
 
     return fileInfo;
   };
@@ -147,3 +151,81 @@ module.exports = function (context) {
     }, []);
   };
 };
+
+/**
+    Removes types from .ts and .gts files.
+    Based on the code in ember-cli: https://github.com/ember-cli/ember-cli/blob/2dc099a90dc0a4e583e43e4020d691b342f1e891/lib/models/blueprint.js#L531
+
+    @private
+    @method removeTypes
+    @param {string} extension
+    @param {string} code
+    @return {Promise}
+  */
+async function removeTypes(extension, code) {
+  const { removeTypes: removeTypesFn } = require('remove-types');
+
+  if (extension === '.gts') {
+    const { Preprocessor } = require('content-tag');
+    const preprocessor = new Preprocessor();
+    // Strip template tags
+    const templateTagIdentifier = (index) =>
+      `template = __TEMPLATE_TAG_${index}__;`;
+    const templateTagIdentifierBraces = (index) =>
+      `(template = __TEMPLATE_TAG_${index}__);`;
+    const templateTagMatches = preprocessor.parse(code);
+    let strippedCode = code;
+    for (let i = 0; i < templateTagMatches.length; i++) {
+      const match = templateTagMatches[i];
+      const templateTag = substringBytes(
+        code,
+        match.range.start,
+        match.range.end
+      );
+      strippedCode = strippedCode.replace(
+        templateTag,
+        templateTagIdentifier(i)
+      );
+    }
+
+    // Remove types
+    const transformed = await removeTypesFn(strippedCode);
+
+    // Readd stripped template tags
+    let transformedWithTemplateTag = transformed;
+    for (let i = 0; i < templateTagMatches.length; i++) {
+      const match = templateTagMatches[i];
+      const templateTag = substringBytes(
+        code,
+        match.range.start,
+        match.range.end
+      );
+      transformedWithTemplateTag = transformedWithTemplateTag.replace(
+        templateTagIdentifier(i),
+        templateTag
+      );
+      transformedWithTemplateTag = transformedWithTemplateTag.replace(
+        templateTagIdentifierBraces(i),
+        templateTag
+      );
+    }
+
+    return transformedWithTemplateTag;
+  }
+
+  return await removeTypesFn(code);
+}
+
+/**
+ * Takes a substring of a string based on byte offsets.
+ * @private
+ * @method substringBytes
+ * @param {string} value : The input string.
+ * @param {number} start : The byte index of the substring start.
+ * @param {number} end : The byte index of the substring end.
+ * @return {string} : The substring.
+ */
+function substringBytes(value, start, end) {
+  let buf = Buffer.from(value);
+  return buf.subarray(start, end).toString();
+}
